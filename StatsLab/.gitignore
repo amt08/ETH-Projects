@@ -1,0 +1,14 @@
+## Ignore .csv files:
+*.csv
+
+## Documents:
+*.pdf
+
+.DS_Store
+code/.DS_Store
+code/.DS_Store
+.DS_Store
+.DS_Store
+code/.DS_Store
+code/preprocessing/.DS_Store
+code/.DS_Store
