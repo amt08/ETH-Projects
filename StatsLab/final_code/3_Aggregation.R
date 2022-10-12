@@ -1,5 +1,6 @@
 # Aggregating readings ----------
 # functions ----
+# 3_Aggregation: function to aggregate the repeated measurements based on time stamps
 get_statistics <- function(x, op = surgery_times, var, time_var) {
   # browser()
   # x: dataframe to be analysed
@@ -112,7 +113,7 @@ get_statistics <- function(x, op = surgery_times, var, time_var) {
 }
 
 get_statistics_died <- function(x, var) {
-  #browser()
+  # browser()
   # x: dataframe to be analysed
   # no time variable needed: all obs can be aggregated, as patient dies before any surgery
   # op: dataframe containing all times between surgeries (timepoints)
