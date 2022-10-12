@@ -1,4 +1,4 @@
-# merging datasets REDONE
+# 3_Merge_clean_aggregated_data: merges, cleans and processes the aggregated data
 # libraries
 library(dplyr)
 library(readr)
