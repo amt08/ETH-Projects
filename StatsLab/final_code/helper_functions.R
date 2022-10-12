@@ -1,4 +1,5 @@
-# helper functions ---------
+# Commonly used procedures/functions
+
 library(dplyr)
 library(readr)
 
@@ -28,7 +29,6 @@ join_data <- function(d1, d2){
   merged
 }
 
-
 # function to eliminate the variables that have missing values above a certain threshold in a dataset
 
 eliminate_columns_with_missing <- function(data, threshold){
@@ -53,6 +53,3 @@ eliminate_columns_with_missing <- function(data, threshold){
 }
 
 # example running the function eliminate_columns_with_missing(vitals_final, 0.6)
-
-
-
