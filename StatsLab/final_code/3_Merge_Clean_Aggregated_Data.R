@@ -1,5 +1,5 @@
-# 3_Merge_clean_aggregated_data: merges, cleans and processes the aggregated data
-# libraries
+# Merges, cleans and processes the aggregated data
+
 library(dplyr)
 library(readr)
 library(visdat)
@@ -8,10 +8,9 @@ library(tidyverse)
 library(data.table)
 library(imputeTS)
 
-setwd("~/Desktop/Data Folder - StatsLab - May 21")
-
-# data needed -------
+# data needed
 load('V_Outcome_Y_Coded.RData')
+
 flags <- patients
 flags <- flags %>% mutate(Startdat = ymd_hms(Startdat, tz = "Europe/Zurich"),
                           Stopdat = ymd_hms(Stopdat, tz = 'Europe/Zurich'))
@@ -19,31 +18,26 @@ rm(patients)
 flags <- flags %>% group_by(research_case_id) %>% arrange(Startdat) %>% 
   mutate(SurgeryNr = ifelse(has_operation==1, row_number(), NA))
 
-
-# aggregated data load ------
+# aggregated data load
 load('vitals_aggregate.RData')
 load('bga_aggregate.RData')
 load('blut_aggregate.RData')
 
-# need to join by start time as well as case id...
-
 all_aggregated <- merge(vitals_final, bga_final, by = c('research_case_id', 'SurgeryNr'), all.x = T, all.y = T)
 all_aggregated <- merge(all_aggregated, blut_final, by = c('research_case_id', 'SurgeryNr'), all.x = T, all.y = T)
 all_aggregated[sapply(all_aggregated, is.infinite)] <- NA
-# 5913 for which we have aggregated readings.
-
 
 df_full <- merge(flags, all_aggregated, c('research_case_id', 'SurgeryNr'))
 
 n <- nrow(df_full)
 missing_percent <- sapply(df_full, function(x) {sum(is.na(x))/n})
 all_var_names <- names(df_full)[grep("first", names(df_full))][1:34]
+
 # visualise
 vis_miss(df_full[ , all_var_names])
-sum(complete.cases(as.matrix(df_full[, -c(1:13, ncol(df_full))]))) # 0
+sum(complete.cases(as.matrix(df_full[, -c(1:13, ncol(df_full))])))
 
-
-# FACTORISE ------
+# factorise
 missing_threshold <- 0.55
 names_factor <-  names(df_full)[missing_percent >= missing_threshold]
 names_factor <- names_factor[grep("first", names_factor)] # don't want kurtosis, skewness or sd (NA when n=1)
@@ -68,15 +62,14 @@ df_full_factorised <- df_full %>%
   dplyr::select(-to_remove)
 
 sum(complete.cases(as.matrix(df_full_factorised[, -c(1:13, ncol(df_full_factorised))]))) # 87
-# there are still some discrepancies to fix
 
 # n = NA, make it 0. 
 df_full_factorised[, n_var][is.na(df_full_factorised[, n_var])] <- 0
+
 # remove DtTmStop and DtTmStart
 # replace any NaNs with NAs (exist in a few columns, e.g. kurtsosi)
 df_full_factorised <- df_full_factorised %>% select(-c(DtTmStop,DtTmStart)) %>% ungroup() %>%
   mutate_all(~replace(., is.nan(.), NA))
-
 
 # T and temperatur: the same. Merge.
 to_remove <- names(df_full_factorised)[grep("_Categ", names(df_full_factorised))]
@@ -102,10 +95,8 @@ all_var_names <- names(df_full_factorised)[grep("first", names(df_full_factorise
 vis_miss(df_full_factorised[ , all_var_names])
 sum(complete.cases(as.matrix(df_full_factorised[, -c(1:11, ncol(df_full_factorised))]))) # 272
 
-
 df <- df_full_factorised
 save(df, file = 'X_Aggregated_Features.RData')
-
 
 ## Large-scale imputation
 my_repo <- "~/Documents/ETH/Stats Lab/"
@@ -113,8 +104,6 @@ source(paste0(my_repo, "polytrauma/code/preprocessing/impute_hard.R"))
 source(paste0(my_repo, "polytrauma/code/preprocessing/impute_soft.R"))
 
 # Loading the imputation functions & normal values
-#source("impute_hard.R")
-#source("impute_soft.R")
 load("Normal_values.RData")
 
 # Preparing the data sets
@@ -133,11 +122,10 @@ for (i in dead_without_surgery_ids) {
   }
 }
 
-
 # Splitting the "df_surgery_rest" data set again in 2: One for those who went to the ICU and one for those who did not
 df_no_icu <- df_surgery_rest
 df_only_icu <- df_surgery_rest[c(), ]
-for (i in icu_ids) {                          ## this step can take ~ 1-2 minutes
+for (i in icu_ids) {
   if (i %in% df$research_case_id) {
     df_only_icu <- rbind(df_only_icu, df_no_icu[df_no_icu$research_case_id == i, ])
     df_no_icu <- df_no_icu[df_no_icu$research_case_id != i, ]
@@ -147,7 +135,7 @@ for (i in icu_ids) {                          ## this step can take ~ 1-2 minute
 # Which ones should be imputed
 impute = "hard"
 if (impute == "soft") {
-  df_no_icu <- impute_soft(df_no_icu)         ## this step can take ~ 2-3 minutes
+  df_no_icu <- impute_soft(df_no_icu)
   df_soft <- rbind(df_no_icu, df_only_icu, df_no_surgery_dead)
   df_soft <- df_soft %>% group_by(research_case_id)
   df_soft <- df_soft[, -length(df_soft)]
@@ -155,7 +143,6 @@ if (impute == "soft") {
 }
 
 if (impute == "hard") {
-  ## the entire process can take ~ 8-10 minutes
   df_no_icu <- impute_hard(df_no_icu)
   df_only_icu <- impute_hard(df_only_icu, ICU = TRUE)
   
@@ -173,9 +160,7 @@ if (impute == "hard") {
   save(df_all_imputed, file = 'df_all_imputed_raw.RData')
 }
 
-
-# other vars to be added ------
-
+# other vars to be added
 load("df_all_imputed_raw.Rdata")
 load("U_Single_Measurements_Patient.RData")
 
@@ -237,12 +222,8 @@ features_drop <- c('Startdat', 'Stopdat', 'surgery_type',
                    names(df)[grep('kurtosis', names(df))])
 df <- df %>% dplyr::select(-features_drop)
 
-
-sum(complete.cases(df[, c(4:ncol(df))])) # 201!!!!
+sum(complete.cases(df[, c(4:ncol(df))]))
 
 df_complete <- df[complete.cases(df[, 4:ncol(df)]) ,]
 
 save(df_complete, file = 'unimputed_complete_cases.Rdata')
-
-
-
