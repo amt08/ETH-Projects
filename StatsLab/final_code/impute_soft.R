@@ -1,9 +1,9 @@
+# Source file used in 3_Merge_clean_aggregated_data to impute missing values
+
 impute_soft <- function(x, higher_moments = TRUE) {
   
-  ## Soft: Only imputing the values for research case IDs that do not have any readings for a
-  # certain variable
-  ## Higher moments: Imputing higher moment readings, i.e. setting all NAs in columns for
-  # the standard deviation, skewness, etc. to 0
+  # Soft: Only imputing the values for research case IDs that do not have any readings for a certain variable
+  # Higher moments: Imputing higher moment readings, i.e. setting all NAs in columns for the standard deviation, skewness, etc. to 0
   
   a <- unique(x$research_case_id)
   x <- as.data.frame(x)
@@ -29,7 +29,7 @@ impute_soft <- function(x, higher_moments = TRUE) {
     x[x$research_case_id == i, ] <- g
   }
   
-  ## Optional: Imputing all higher moments: Setting all NAs to 0
+  # Optional: Imputing all higher moments: Setting all NAs to 0
   if  (higher_moments) {
     
     for (k in names(x)) {
