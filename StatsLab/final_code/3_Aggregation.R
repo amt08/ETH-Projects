@@ -1,15 +1,21 @@
-# Aggregating readings ----------
-# functions ----
-# 3_Aggregation: function to aggregate the repeated measurements based on time stamps
+# Aggregating readings
+
+library(dplyr)
+library(readr)
+library(lubridate)
+library(e1071)
+
+# Function to aggregate the repeated measurements based on time stamps
 get_statistics <- function(x, op = surgery_times, var, time_var) {
-  # browser()
   # x: dataframe to be analysed
   # op: dataframe containing all times between surgeries (timepoints)
   # vars: variable name with repeated measurements
-  # time_var: name of time_var which identifiers which time reading is taken
+  # time_var: name of time_var which identifies which time reading is taken
+  
   var_factor <- names(x[, var])[sapply(x[, var], class)=='factor']
   var <- names(x[, var])[sapply(x[, var], class)=='numeric']
-  # first surgery:
+  
+  # first surgery
   first_surgery <- op %>% filter(SurgeryNr==1)
   x_factor <- x %>% select(research_case_id, time_var, var_factor)
   x <- x %>% select(research_case_id, time_var, var)
@@ -69,8 +75,6 @@ get_statistics <- function(x, op = surgery_times, var, time_var) {
                            skew = my_skewness(.), kurtosis = my_kurtosis(.)), 
                  na.rm = TRUE) 
   
-
-  
   new_op <- data.frame()
   for (i in 2:max(op$SurgeryNr)) {
     prev_end <- op %>%
@@ -113,12 +117,12 @@ get_statistics <- function(x, op = surgery_times, var, time_var) {
 }
 
 get_statistics_died <- function(x, var) {
-  # browser()
   # x: dataframe to be analysed
   # no time variable needed: all obs can be aggregated, as patient dies before any surgery
   # op: dataframe containing all times between surgeries (timepoints)
   # vars: variable name with repeated measurements
   # time_var: name of time_var which identifiers which time reading is taken
+  
   var_factor <- names(x[, var])[sapply(x[, var], class)=='factor']
   var <- names(x[, var])[sapply(x[, var], class)=='numeric']  # 
   x_factor <- x %>% select(research_case_id, var_factor)
@@ -166,8 +170,7 @@ get_statistics_died <- function(x, var) {
     summarise_at(var_factor, funs(mode = calculate_mode(.),
                                   n = sum(!is.na(.)), first = get_first(.), 
                                   last = get_last(.)))
-  #names(factors_agg)[2:ncol(factors_agg)] <- sapply(var_factor, function(y) {sapply(names(factors_agg)[2:5], 
-  #                                                                                  function(x) {paste0(y, "_",x)})})
+
   aggregated <-  x %>%
     group_by(research_case_id) %>% 
     summarise_at(var, funs(max, min, median, mean, sd = my_sd(.), 
@@ -178,12 +181,9 @@ get_statistics_died <- function(x, var) {
   
   aggregated 
 }
+
 # currently: if no info, gives - inf as max, inf as min and NA or NaN for the other values
-library(dplyr)
-library(readr)
-library(lubridate)
-library(e1071)
-# set working directory to data folder - Contains all: A-S cleaned data files, as per 09.05.2021
+# set working directory to data folder
 setwd("~/Desktop/Data Folder - StatsLab - May 21")
 
 # needed for operations data
@@ -191,11 +191,11 @@ load('H_Operationen_Surgery_Times_long.RData')
 flags <- read_csv('T_Outcome_Y_Coded.csv')
 died_wo_surgery <- (flags %>% filter(has_operation==0) %>% filter(Death==1) %>% select(research_case_id))$research_case_id
 
-
-# bga ---------
+# bga
 bga <- read.csv("A_Bga_Werte.csv", stringsAsFactors = T) %>% mutate(Messung_dttm = ymd_hms(Messung_dttm, tz = "Europe/Zurich"))
 bga.vars <- c("Lac", "T", "pO2", "FIO2")
 bga_agg <- get_statistics(bga, var = bga.vars, time_var = 'Messung_dttm') 
+
 # those who died without surgery: 29 of them
 bga_died_agg <- get_statistics_died(bga %>% filter(research_case_id %in% died_wo_surgery), bga.vars)
 
@@ -203,25 +203,22 @@ bga_final <- bind_rows(bga_agg, bga_died_agg)
 
 save(bga_final, file = "bga_aggregate.RData")
 
-
-# blut:------
+# blut
 blut <- read.csv("B_Blut_Werte_Categorized.csv", stringsAsFactors = T) %>% mutate(ObservationDtTm = ymd_hms(ObservationDtTm, tz = "Europe/Zurich"))
 blut.vars <- c("CKDEPI", "BAS", "BASA", "CRP", "IMGR", "IMGRA", 
                            "LC", "LYM", "NEU", "NEUA", "PCT", "PCTB", "TC", 
                            "FBG", "GGT", "KHINR", "PTZEIT", "QUICK", "TZI", 
                            "HUFH", "CK", "LDH", "MYO", "CKDEPI_Categ", 
-               "HB", "KREA", "MYO_Categ") # also add the categories?
+               "HB", "KREA", "MYO_Categ")
 blut_agg <- get_statistics(blut, var = blut.vars, time_var = 'ObservationDtTm') 
 blut_died_agg <- get_statistics_died(blut %>% filter(research_case_id %in% died_wo_surgery), blut.vars)
 blut_final <- bind_rows(blut_agg, blut_died_agg)
 save(blut_final, file = "blut_aggregate.RData")
 
-
-# vitals: ------
+# vitals
 vitals <- read.csv("R_Vital_Werte.csv", stringsAsFactors = T) %>% mutate(STARTDAT = ymd_hms(STARTDAT, tz = "Europe/Zurich"))
 vitals.vars <- names(vitals)[4:8]
 vitals_agg <- get_statistics(vitals, var = vitals.vars, time_var = 'STARTDAT') 
 vitals_died_agg <- get_statistics_died(vitals %>% filter(research_case_id %in% died_wo_surgery), vitals.vars)
 vitals_final <- bind_rows(vitals_agg, vitals_died_agg)
 save(vitals_final, file = "vitals_aggregate.RData")
-
