@@ -1,37 +1,31 @@
+# ROC plotting and other analysis of the models (glmm and ml) run for the main dataset
+
 library(plotROC)
 library(pROC)
 library(caret)
 library(likert)
 library(gtsummary)
 
-
 # analysis of main data models
-
-setwd("~/Desktop/Data Folder - StatsLab - May 21")
-
 
 # GLMM
 load('glmm_unimputed_complete_only.RData')
 load('roc_details_unimputed_complete_only.RData')
 
-# make sure to talk about problem of dimensionality
-# and identifiability
+# make sure to talk about problem of dimensionality and identifiability
 
 unimp_roc <- roc(roc_details$obs, roc_details$pred, levels = c("No", "Yes"), percent = TRUE)
-
 
 load('roc_details_all_imputed.RData') # all values, not just complete
 load('glmm_all_imputed.RData')
 
 imp_roc <- roc(roc_details$obs, roc_details$pred, levels = c("No", "Yes"), percent = TRUE)
 
-
 load('roc_details_all_imputed_complete_only.RData')
 load('glmm_all_imputed_complete_only.RData')
 sink("glmm_imp_cc_summary.txt")
 print(summary(glm_mod_full))
 sink()  # returns output to the console
-
 
 imp_complete_roc <- roc(roc_details$obs, roc_details$pred, levels = c("No", "Yes"), percent = TRUE)
 
@@ -61,7 +55,6 @@ roc_data_lgr <- roc(penalised_lgr$pred$obs, penalised_lgr$pred$Yes, levels = c("
 roc_data_xgb <- roc(fit_xg$pred$obs, fit_xg$pred$Yes, levels = c("No", "Yes"), percent = TRUE)
 roc_data_rfs <- roc(fit_rf$pred$obs, fit_rf$pred$Yes, levels = c("No", "Yes"), percent = TRUE)
 
-
 pdf(file = "unimputed_auc_roc.pdf", width = 10, height = 9)
 
 par(cex.main=1, cex.lab = 1)
@@ -75,8 +68,6 @@ legend("topleft",
                 paste('Unimputed - Random Forest', ", AUC: 0.59", sep = "")),
        col=c("red", "darkgreen", "blue"),
        lwd= 3, cex = 1, xpd = FALSE, lty = c(rep(1, times = 3)), bty = "n", x.intersp = 0.15, text.width = 0.045, y.intersp = 0.75)
-
-
 
 load('imputed_complete_cases_rf.RData')
 load('imputed_complete_cases_xg.RData')
@@ -99,8 +90,6 @@ legend("topleft",
        col=c("red", "darkgreen", "blue"),
        lwd= 3, cex = 1, xpd = FALSE, lty = c(rep(1, times = 3)), bty = "n", x.intersp = 0.15, text.width = 0.045, y.intersp = 0.75)
 
-
-
 # writing AUC_ROC graphs to pdf
 
 pdf(file = "main_auc_roc.pdf", width = 10, height = 9)
@@ -122,7 +111,6 @@ legend("topleft",
                 paste('Imputed - Random Forest', ", AUC: 0.69", sep = "")),
        col=c("red", "darkgreen", "blue", "red", "darkgreen", "blue"),
        lwd= 3, cex = 1, xpd = FALSE, lty = c(rep(1, times = 3), rep(2, times = 3)), bty = "n", x.intersp = 0.15, text.width = 0.045, y.intersp = 0.75)
-
 
 ### feature importance
 
