@@ -8,12 +8,10 @@ raw_surgeries <- read.csv('data/raw_data/DCO_Defsurg.csv', stringsAsFactors = T)
 surgeries_new <- read.csv('../surgeries_new_processed_on_raw.csv', stringsAsFactors = T)
 death <- read.csv('data/tidy_data/I_Patient_Unfall.csv', stringsAsFactors = T)
 mapping <- read.csv('data/tidy_data/E_Mapping_AIS.csv', stringsAsFactors = T)
-# surgeries_old <- read.csv('polytrauma/data/tidy_data/H_Operationen.csv', stringsAsFactors = T)
 load('data/tidy_data/operations')
 surgeries_old <- operations
 
-### select death outcome and research case id only
-
+# select death outcome and research case id only
 death <- death %>%
   select(research_case_id, Death)
 
@@ -23,13 +21,11 @@ case_id <- mapping %>%
   unlist()
 
 filter_dataset <- function(data, ids){
-  
   filtered <- data %>%
     filter(research_case_id %in% ids) %>%
     as_tibble()
   
   return(filtered)
-  
 }
 
 join_data <- function(d1, d2){
@@ -40,27 +36,15 @@ join_data <- function(d1, d2){
   return(merged)
 }
 
-### mapping keep only relevant columns
-
+# mapping keep only relevant columns
 mapping <- mapping %>% select(research_case_id) %>% distinct()
 mapping['has_operation'] <- 0
 
-## death - keep only AIS >= 3
-
+# death - keep only AIS >= 3
 death <- filter_dataset(death, case_id)
 
-## keep only relevant columns for operations old dataset
+# keep only relevant columns for operations old dataset
 surgeries_old <- surgeries_old %>% ungroup() %>% select(research_case_id, Startdat, Stopdat)
-
-### cross-referencing the old and new dataset
-
-# for(patient in unique(surgeries_old$research_case_id)){
-#   subset_old <- subset(surgeries_old, research_case_id == patient)
-#   suset_new <- subset(surgeries_new, research_Case_id == patient)
-#   
-#   if(nrow(subset_new))
-# }
-
 
 # transform to datetime
 surgeries_old <- surgeries_old %>%
@@ -69,42 +53,6 @@ surgeries_old <- surgeries_old %>%
 
 surgeries_new <- surgeries_new %>%
   mutate(Therapy_dat = as.POSIXlt(Therapy_dat, format = "%Y-%m-%d %H:%M:%S"))
-
-# coded_surgeries_old <- data.frame()
-# 
-# for(patient in unique(surgeries_old$research_case_id)){
-#   subset_new <- subset(surgeries_new, research_case_id == patient)
-#   subset_old <- subset(surgeries_old, research_case_id == patient)
-#   patients <- data.frame()
-#   if(nrow(subset_new) != 0){
-#     list_dates <- unique(subset_new$Therapy_dat)
-# 
-#     for(tdt in 1:length(list_dates)){
-#       subset_dates_old <- subset(subset_old, Stopdat >= list_dates[tdt])
-#       subset_dates_old_before <- subset(subset_old, Stopdat < list_dates[tdt])
-#       if(nrow(subset_dates_old_before) != 0){
-#         subset_dates_old_before['Therapy_dat'] <- NA
-#         subset_dates_old_before['surgery_type'] <- NA
-#       }
-#       
-#       if(nrow(subset_dates_old) != 0){
-#         subset_dates_old <- subset_dates_old %>% mutate(time_diff = Stopdat - list_dates[tdt]) %>% arrange(., time_diff)
-#         date_therapy <- list_dates[tdt]
-#         subset_dates_old[1, 'Therapy_dat'] <- as.character(date_therapy)
-#         subset_dates_old[1, 'surgery_type'] <- subset_new$Intervention[subset_new$Therapy_dat == list_dates[tdt]]
-#         if(tdt == length(list_dates)){
-#           patients <- bind_rows(patients, subset_dates_old)
-#         }else{
-#           patients <- bind_rows(patients, subset_dates_old[1, ])
-#         }
-#       }
-#       patients <- bind_rows(patients, subset_dates_old_before)
-#     }
-#     coded_surgeries_old <- bind_rows(coded_surgeries_old, patients)
-#   }
-# }
-
-
 
 new_processed_patients <- data.frame()
 
@@ -136,12 +84,7 @@ for(patient in unique(surgeries_new$research_case_id)){
 
   }
   new_processed_patients <- bind_rows(new_processed_patients, new_processed)
-
 }
-
-
-# new_processed_patients <- new_processed_patients %>%
-#   mutate(Stopdat = as.POSIXlt(Stopdat, format = "%Y-%m-%d %H:%M:%S"))
 
 surgeries_old_augmented <- data.frame()
 for(patient in unique(surgeries_old$research_case_id)){
@@ -153,17 +96,14 @@ for(patient in unique(surgeries_old$research_case_id)){
     subset_old[item, 'hemo_is_involved'] <- NA
     
     if(nrow(subset_new) != 0){
-      # sub_subset_new <- subset(subset_new, Stopdat == subset_old[item, 'Stopdat'])
       sub_subset_new <- subset(subset_new, Stopdat == subset_old$Stopdat[[item]])
       if(nrow(sub_subset_new) != 0){
         date_new <- unique(sub_subset_new$Stopdat)
         subset_old[item, 'surgery_type'] <- as.character(sub_subset_new$Intervention)[nrow(sub_subset_new)]
         subset_old[item, 'hemo_is_involved'] <- sub_subset_new$hemo_is_involved[nrow(sub_subset_new)]
       }
-    }
-    
+    }  
   }
-  
   surgeries_old_augmented <- bind_rows(surgeries_old_augmented, subset_old)
 }
 
@@ -172,8 +112,6 @@ new_processed_patients %>%
   group_by(research_case_id, Stopdat) %>%
   summarise(n = n()) %>%
   filter(n!= 1)
-
-##############################
 
 mapping <- join_data(mapping, death)
 
@@ -216,7 +154,6 @@ ordered_multiple_surgeries <- is_last_definitive %>%
   arrange(., Stopdat) %>%
   mutate(surgery_order = row_number())
 
-
 multiple_flagged <- data.frame()
 for(patient in unique(ordered_multiple_surgeries$research_case_id)){
   subset_definitive <- subset(ordered_multiple_surgeries, research_case_id == patient)
@@ -243,7 +180,6 @@ mapping$flag[which(mapping$has_operation == 1 & mapping$surgery_type == "DefSurg
 mapping$flag[which(mapping$has_operation == 1 & mapping$surgery_type == "DefSurg" & mapping$hemo_is_involved == 0 & is.na(mapping$flag) &
                      mapping$multiple > 1 & mapping$is_last == 0)] <- 'check vitals'
 
-
 mapping %>% filter(flag != 'unknown operation type', flag != 'remove') %>% dim()
 
 write.csv(mapping, 'T_Outcome_Y_Coded_newaggr.csv', row.names = F)
@@ -251,9 +187,6 @@ write.csv(mapping, 'T_Outcome_Y_Coded_newaggr.csv', row.names = F)
 old <- read.csv('../T_Outcome_Y_Coded_new.csv')
 
 old %>% filter(flag != 'unknown operation type', flag != 'remove') %>% dim()
-
-
-################################
 
 coded_surgeries_old <- coded_surgeries_old %>% distinct()
 
