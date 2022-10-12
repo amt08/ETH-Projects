@@ -45,7 +45,7 @@ legend("topleft",
        lwd= 3, cex = 1, xpd = FALSE, lty = 1, bty = "n", x.intersp = 0.15, text.width = 0.045, y.intersp = 0.75)
 dev.off()
 
-# machine learning for main data ------
+# machine learning for main data
 
 load('unimputed_xg.RData')
 load('unimputed_rf.RData')
