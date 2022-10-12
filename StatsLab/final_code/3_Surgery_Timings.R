@@ -1,11 +1,12 @@
 # LONG FORMAT
 # Operations timing of surgeries creation
+# Creates a data frame consisting of all case IDs, surgery numbers and their start and stop timings. To be used for aggregation.
 
 library(dplyr)
 library(readr)
 library(lubridate)
 
-# set working directory to data folder - Contains all: A-S cleaned data files, as per 09.05.2021
+# set working directory to data folder
 setwd("~/Desktop/Data Folder - StatsLab - May 21")
 my_repo <- "~/Documents/ETH/Stats Lab/"
 source(paste0(my_repo, "polytrauma/code/preprocessing/helper_functions.R"))
