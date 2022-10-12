@@ -12,13 +12,9 @@ library(DiagrammeR)
 library(ggridges)
 library(gridExtra)
 
-# base::load('icu.Rdata')
-
 base::load('data_icu_final.Rdata')
 
-############################################################### start from here EDA
-
-# load('cleaned_icu_data.Rdata')
+# start from here EDA
 
 icu <- icu %>% rename(flag = y)
 p1 <- icu %>%
@@ -41,9 +37,6 @@ p2 <- icu %>%
 
 grid.arrange(p1, p2, ncol = 2, widths = c(0.3, 0.7))
 
-
-############################################################################## 
-
 missing.vars <- colnames(icu)[sapply(icu, function(x) any(is.na(x)))]
 
 rec.syn <- recipe(y ~ ., data = icu) %>%
@@ -52,7 +45,7 @@ rec.syn <- recipe(y ~ ., data = icu) %>%
   # center and scale
   step_center(all_numeric_predictors()) %>%
   step_scale(all_numeric_predictors()) %>%
-  # # create dummies
+  # create dummies
   step_dummy(all_nominal_predictors()) %>%
   # remove nzv
   step_nzv(all_predictors()) %>%
@@ -73,7 +66,6 @@ fitControl <- trainControl(
   verbose = TRUE,
   classProbs = TRUE,
   savePredictions = TRUE
-  # seeds =  cvSeeds
 )
 
 modellist <- list()
@@ -82,7 +74,7 @@ for (i in 1:length(ntrees)){
   ntree<-ntrees[i]
   set.seed(2049)
   rfs <- train(x = rec.syn, data = icu,
-                  method = "rf",
+                  method = "rf", # Random Forest
                   trControl = fitControl,
                   tuneGrid = tune_grid,
                   # tuneLength  = 10, # Nr of random tuning parameters to try
@@ -95,22 +87,18 @@ for (i in 1:length(ntrees)){
   
 }
 
-
-
-### plotting roc
+# plotting roc
 roc_data <- roc(modellist$`300`$pred$obs, modellist$`300`$pred$Yes, levels = c("No", "Yes"), percent = TRUE)
 plot.roc(roc_data, main="ROC", col = "red", print.auc = TRUE,  legacy.axes = TRUE, add = FALSE, asp = NA)
 
 save(modellist, file = 'rfs.Rdata')
-############################ variable importance
+# variable importance
 
 caret_imp <- varImp(modellist$`1000`)
 caret_imp
 plot(caret_imp, top=10)
 
-
-####################################################################
-###################### looking at complete cases only
+# looking at complete cases only
 
 all_missing <- names(which(colSums(is.na(train)) > 0))
 
@@ -131,8 +119,3 @@ xgb_tune <- train(x = subset(complete_cases_icu, select = -y),
 result <- evalm(xgb_tune, title = "5-fold CV ROC", gnames = c('xgboost'))
 
 result$roc
-
-
-
-
-
