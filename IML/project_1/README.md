@@ -1,4 +1,4 @@
-#### Report for Task 1:
+### Report for Task 1:
 
 In this assignment, I tried different built-in methods in Python, however, the solution yielding the best score is the manual coding of the K-fold CV.
 
