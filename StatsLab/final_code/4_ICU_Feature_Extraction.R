@@ -1,17 +1,14 @@
-
-#### Functions ####
-# F: Find subsequent surgery----
-# If multiple surgeries, return the date time of the subsequent surgery
+# Find subsequent surgery. If multiple surgeries, return the date time of the subsequent surgery
 
 find.previous.surgery <- function(id, startdat, operations.data){
   
   startdat <- as.POSIXlt(startdat, format = "%Y-%m-%d %H:%M:%S")
-  # only keep...
+  # only keep
   operations.data <- operations.data %>%
     # relevant cases
     filter(research_case_id == id) %>%
     # surgeries with stopdat == stopdat or later
-    # --> if multiple surgeries but only 1 obs left, it was the last surgery
+    # if multiple surgeries but only 1 obs left, it was the last surgery
     filter(DtTmStart <= startdat) %>%
     arrange(desc(DtTmStart))
   
@@ -26,29 +23,29 @@ find.previous.surgery <- function(id, startdat, operations.data){
   return(NA)
 }
 
-# F: Find ICU Vitals----
+# Find ICU Vitals
 
 icu.outcome <- function(id, surgery.time, icu.data, operations.data){
   # get subsequent surgery (if available)
   previous.surgery <- find.previous.surgery(id, surgery.time, operations.data)
   
-  # filter data by...
+  # filter data by
   icu.data <- icu.data %>%
-    filter(research_case_id == id) # ...relevant patient
+    filter(research_case_id == id) # relevant patient
 
-  
   # If single surgery
   if (is.na(previous.surgery)){
-    # filter data by...
+    # filter data by
     icu.data <- icu.data %>%
-      filter(DtTm <= surgery.time) %>% # ...only vitals after surgery
+      filter(DtTm <= surgery.time) %>% # only vitals after surgery
       arrange(DtTm)
   }
+  
   # If multiple surgeries
   else{
-    # filter data by...
+    # filter data by
     icu.data <- icu.data %>%
-      filter(DtTm <= surgery.time & DtTm > previous.surgery) %>% # ...only vitals in between surgeries
+      filter(DtTm <= surgery.time & DtTm > previous.surgery) %>% # only vitals in between surgeries
       arrange(DtTm)
   }
   
@@ -100,27 +97,18 @@ icu.outcome <- function(id, surgery.time, icu.data, operations.data){
     summarise_at(features.exist, funs(exist = any(!is.na(.))), na.rm = TRUE) %>%
     bind_cols(features)
   
-  # exit if no obs left
-  #if (nrow(icu.data) == 0){
-  #  return(rep(NA, 71))
-  #}
-  
   # return how many vitals
   return(features)
   
 }
 
-
-#### Work ####
-# Load Packages and Directory----
+# Load Packages and Directory
 library(e1071)
 
 # Set directory to file directory
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-
-# Load Data----
-
+# Load Data
 operations <- read.csv("./../Data/SurgeryOutcome/H_Operationen.csv") %>%
   mutate(DtTmStop = as.POSIXlt(Stopdat, format = "%Y-%m-%d %H:%M:%S") ) %>%
   mutate(DtTmStart = as.POSIXlt(Startdat, format = "%Y-%m-%d %H:%M:%S") )
@@ -161,7 +149,7 @@ ICU_param_wide <- ICU_param_wide %>%
 
 constant.features <- read.csv("./../Data/SurgeryOutcome/U_Single_Measurements_Patient.csv")
 
-# Run the Functions----
+# Run the Functions
 
 temp <- NULL
 for (i in 1:nrow(patients)){
@@ -184,7 +172,7 @@ icu.features %>%
 
 save(icu.features, file = "./../Data/W_ICU_Features.Rdata")
 
-# Check Data Availability----
+# Check Data Availability
 
 apply(outcome.vitals, 2, function(x) x[is.infinite(x)]=NA)
 

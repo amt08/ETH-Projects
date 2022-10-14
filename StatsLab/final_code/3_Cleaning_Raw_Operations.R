@@ -9,19 +9,15 @@ library('readxl')
 library('tidyr')
 library('progress')
 
-
 surgeries <- read.csv('polytrauma/data/raw_data/DCO_Defsurg.csv', stringsAsFactors = T)
-
 surgeries <- surgeries %>% filter(Intervention %in%  c('DCO', 'DefSurg', 'Hemodynamic_support'))
 
 ## first filter the relevant columns
-
 surgeries <- surgeries %>% select(research_case_id, Intervention, Therapy_dat)
 
 # divide in 2 dataframes
 dco_def_surgeries <- surgeries %>% filter(Intervention != 'Hemodynamic_support')
 hemo_surgeries <- surgeries %>% filter(Intervention == 'Hemodynamic_support')
-
 
 # solve problem of dco and definitive happening at the same time
 new_surgeries <- data.frame()
@@ -54,9 +50,6 @@ hemo_surgeries <- hemo_surgeries %>% distinct()
 
 surgeries_union <- rbind(new_surgeries, hemo_surgeries)
 
-
-################################################
-
 # cancelling if hemo is after def surgery
 ranked_operations <- surgeries_union %>%
   group_by(research_case_id) %>%
@@ -75,10 +68,8 @@ for(patient in unique(ranked_operations$research_case_id)){
       if((i-1) > 0){
         subset_patient[i-1, 'hemo_is_involved'] <- 1
       }
-    }
-    
+    }  
   }
-  
   op_hemo <- bind_rows(op_hemo, subset_patient)
 }
 
