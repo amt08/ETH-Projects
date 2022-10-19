@@ -72,34 +72,10 @@ if __name__ == '__main__':
     
     import torchvision.datasets as dset
     import torchvision.transforms as transforms
-    
-    # class IgnoreLabelDataset(torch.utils.data.Dataset):
-    #     def __init__(self, orig):
-    #         self.orig = orig
-    # 
-    #     def __getitem__(self, index):
-    #         return self.orig[index][0]
-    # 
-    #     def __len__(self):
-    #         return len(self.orig)
-    # 
-    # cifar = dset.CIFAR10(root='data/', download=True,
-    #                          transform=transforms.Compose([
-    #                              transforms.Scale(32),
-    #                              transforms.ToTensor(),
-    #                              transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    #                          ])
-    # )
-    # 
-    # IgnoreLabelDataset(cifar)
-    # 
-    # print ("Calculating Inception Score...")
-    # print (inception_score(IgnoreLabelDataset(cifar), cuda=True, batch_size=16, resize=True, splits=10))
- 
-    import os
     from torchvision.io import read_image
     from PIL import Image
     import numpy as np
+    import os
     
     class ImgDataset(torch.utils.data.Dataset):
         def __init__(self, dirloc, lenght, transform=None):
@@ -108,12 +84,10 @@ if __name__ == '__main__':
             self.transform = transform
 
         def __getitem__(self, idx):
-            #img_path = dirname + "/" + str(idx) + "_fake.png"
+
             img_path = dirname + "/single_s" + str(idx) + ".png"
             if not (os.path.isfile(img_path)):
                 print("Error no file")
-            # with Image.open(img_path) as im:
-            #     image = np.array(im)
             image = read_image(img_path)
             image = image/255.0
             if self.transform:
@@ -124,8 +98,7 @@ if __name__ == '__main__':
             return self.lenght 
     
     dirname = '../output/saved/Manigan/valid'
-    n_files = 14660#29280
+    n_files = 14660
     transform=transforms.Compose([transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    #transform = None
     print ("Calculating Inception Score...")
     print (inception_score(ImgDataset(dirname, n_files, transform=transform), cuda=True, batch_size=16, resize=True, splits=10))
