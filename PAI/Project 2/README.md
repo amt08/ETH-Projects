@@ -11,7 +11,7 @@ The BayesNet forward method is using the DenseNet one, but it is also adding the
 In Model, I’m calling the forward method of the Bayesian Network and collecting the current logits, the log prior and posterior for the batch. I constructed the loss as the sum of the negative log likelihood loss at the log softmax of the current batch logits and the difference between the log posterior and the log prior scaled by the total number of batches, as suggested in the paper.
 
 ### References
-<a name="1">[1]</a> 
+<a name="1">[#1]</a> 
 Blundell, C., Cornebise, J., Kavukcuoglu, K. and Wierstra, D., 2015, June. Weight uncertainty in neural network. In International conference on machine learning (pp. 1613-1622). PMLR.
 
 
