@@ -1,6 +1,4 @@
-import numpy
 from scipy.stats import laplace, norm, t
-import scipy
 import math
 import numpy as np
 from scipy.special import logsumexp
