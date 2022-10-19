@@ -11,11 +11,10 @@ from torch.autograd import Variable
 
 
 def blurring(img, k_size=5, s=1, pad=2):
-    k_size = 9  # 7
-    pad= 4  # 3
+    k_size = 9 
+    pad= 4 
     _blur_filter = torch.ones([3, 3, k_size, k_size]).to('cuda')
     blur_filter = _blur_filter.view(3, 3, k_size, k_size) / (k_size**2 * 3)  # first element is output ch. https://pytorch.org/docs/stable/generated/torch.nn.functional.conv2d.html
-    # gray = getGrayImage(img)
     out = torch.nn.functional.conv2d(input=img,
                                     weight=Variable(blur_filter),
                                     stride=s,
@@ -97,7 +96,7 @@ def words_loss(img_features, words_emb, labels,
         weiContext = weiContext.transpose(1, 2).contiguous()
         word = word.view(batch_size * words_num, -1)
         weiContext = weiContext.view(batch_size * words_num, -1)
-        #
+        
         row_sim = cosine_similarity(word, weiContext)
         row_sim = row_sim.view(batch_size, words_num)
 
@@ -132,14 +131,15 @@ def discriminator_loss(netD, real_imgs, fake_imgs, conditions,
                        real_labels, fake_labels, words_embs, cap_lens, image_encoder, class_ids,
                         w_words_embs, wrong_caps_len, wrong_cls_id, word_labels, epoch, cfg):
     
-    real_features = netD(real_imgs, epoch)  # shape: [10, 512, 4, 4]
+    real_features = netD(real_imgs, epoch)
     fake_features = netD(fake_imgs.detach(), epoch)
 
     
-    cond_real_logits = netD.COND_DNET(real_features, conditions)  # shape : [10]
+    cond_real_logits = netD.COND_DNET(real_features, conditions)
     cond_real_errD = nn.BCELoss()(cond_real_logits, real_labels)
     cond_fake_logits = netD.COND_DNET(fake_features, conditions)
     cond_fake_errD = nn.BCELoss()(cond_fake_logits, fake_labels)
+    
     # ------ blurr real image loss ------
     if cfg.TRAIN.USE_BLUR_REAL_IMAGE:
         blurred_real_img = blurring(real_imgs)
@@ -147,8 +147,8 @@ def discriminator_loss(netD, real_imgs, fake_imgs, conditions,
         # print("what is conditions??")
         cond_blurred_real_logits  = netD.COND_DNET(blur_real_features, conditions)  # conditions is sentence embeddings
         cond_blurred_real_errD = nn.BCELoss()(cond_blurred_real_logits, fake_labels)
+    
     # ------------- done ----------------
-    #
     batch_size = real_features.size(0)
     cond_wrong_logits = netD.COND_DNET(real_features[:(batch_size - 1)], conditions[1:batch_size])
     cond_wrong_errD = nn.BCELoss()(cond_wrong_logits, fake_labels[1:batch_size])
@@ -175,11 +175,6 @@ def discriminator_loss(netD, real_imgs, fake_imgs, conditions,
 
 
     region_features_real, cnn_code_real = image_encoder(real_imgs)
-
-
-    #w_result = word_level_correlation(region_features_real, w_words_embs, wrong_caps_len,
-    #                                        batch_size, wrong_cls_id, fake_labels, word_labels)
-
     result = word_level_correlation(region_features_real, words_embs,
                                         cap_lens, batch_size, class_ids, real_labels, word_labels)
     
