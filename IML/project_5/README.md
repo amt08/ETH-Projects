@@ -1,4 +1,4 @@
-Report for Task 5:
+### Report for Task 5:
 
 #### Approach Overview
 The data is presented in triplet format and the similarity associations within the triplets are known. A siamese network with triplet loss is therefore a suitable architecture for the task and is the focus of my work.
