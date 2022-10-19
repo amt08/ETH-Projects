@@ -1,0 +1,6 @@
+venv/
+.vscode/
+*.txt
+*.csv
+*.byte
+*.npz
