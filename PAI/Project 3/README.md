@@ -1,6 +1,6 @@
 ### Task 3:
 
-Bayesian optimisation under constraints following Gelbart et al. (2014)[[1]](#1).
+Bayesian optimisation under constraints following Gelbart et al. (2014) [[1]](#1).
 
 ### Report for task 3:
 
