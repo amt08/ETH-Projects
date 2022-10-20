@@ -3,11 +3,14 @@ import os
 import typing
 import logging
 import numpy as np
+import matplotlib.pyplot as plt
+
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.stats import norm
+
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import ConstantKernel, RBF, WhiteKernel
-import matplotlib.pyplot as plt
+
 
 EXTENDED_EVALUATION = False
 # Set `EXTENDED_EVALUATION` to `True` in order to visualize your predictions.

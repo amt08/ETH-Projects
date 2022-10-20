@@ -5,3 +5,4 @@ venv/
 *.byte
 *.npz
 *.bytes
+*.pdf

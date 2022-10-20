@@ -1,6 +1,5 @@
 import numpy as np
 
-
 domain = np.array([[0, 6], [0, 6]])
 
 def check_in_domain(x):

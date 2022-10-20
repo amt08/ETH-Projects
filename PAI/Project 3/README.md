@@ -1,6 +1,6 @@
 ### Task 3:
 
-[[1]](#1).
+Bayesian optimisation under constraints following Gelbart et al. (2014).[[1]](#1).
 
 ### Report for task 3:
 
@@ -12,9 +12,9 @@ In the acquisition function, I compute the predictive mean and variance at the n
 
 The optimal x is obtained by collecting both function evaluations at the previous points. I then attributed a large number to all function values f, where the constraint is not fulfilled, such that when searching for the optimal x, we don’t consider the cases where the constraint is violated. Therefore the optimal x is returned as the minimizer of the f values excluding the cases when c(x) is greater than lambda.
 
-
 ### References
-<a name="1">[1]</a> 
+<a name="1">[1]</a>
+Gelbart, M.A., Snoek, J. and Adams, R.P., 2014. Bayesian optimization with unknown constraints. In Proceedings of the Thirtieth Conference on Uncertainty in Artificial Intelligence (UAI'14). AUAI Press, Arlington, Virginia, USA, 250–259.
 
 
 
