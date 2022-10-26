@@ -1,5 +1,5 @@
 ### Task 1:
-"Predicting the age of a brain from MRI features"
+Predicting the age of a brain from MRI features.
 
 This task is primarily concerned with regression. However, we have perturbed the original MRI features in several ways. You will have to perform the following preprocessing steps:
 
