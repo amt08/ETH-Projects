@@ -1,5 +1,5 @@
 ### Task 2:
-"Multiclass classification from ECG signals"
+Multiclass classification from ECG signals.
 
 This task is about classifing ECG signals into 4 different classes.
 
