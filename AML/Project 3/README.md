@@ -1,5 +1,5 @@
 ### Task 3:
-"Mitral valve segmentation of short ultrasound videos of a beating heart."
+Mitral valve segmentation of short ultrasound videos of a beating heart.
 
 ### Report for task 3:
 
